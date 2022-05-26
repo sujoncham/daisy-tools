@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -26,10 +26,49 @@ async function run(){
         const reviewCollection = client.db('daisyTools').collection('reviews');
         const purchaseCollection = client.db('daisyTools').collection('purchase');
         const profileCollection = client.db('daisyTools').collection('profile');
+        const userCollection = client.db('daisyTools').collection('users');
 
+        app.put('/users/:email', async (req, res)=>{
+            const email = req.params.email;
+            const user = req.body;
+            const filter = {email:email};
+            const options = {upsert:true};
+            const updateDoc = {
+                $set: user,
+            }
+            const users = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(users);
+        })
+
+        app.get('/users/:email', async (req, res)=>{
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+        
         app.get('/products', async (req, res)=>{
             const products = await productCollection.find().toArray();
             res.send(products);
+        });
+
+        app.get('/products/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const product = await productCollection.findOne(query);
+            res.send(product);
+          });
+
+        app.put('/products/:id', async (req, res)=>{
+            const id = req.params.id;
+            const updatePurchase  = req.body;
+            const filter = {_id:ObjectId(id)};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: {
+                    quantity:updatePurchase.quantity,
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         })
 
         app.post('/products', async (req, res)=>{ 
@@ -60,6 +99,18 @@ async function run(){
             res.send(result);
         });
 
+        // app.get('/purchase', async (req, res)=>{
+        //     const reviews = await purchaseCollection.find().toArray();
+        //     res.send(reviews);
+        // });
+
+        app.get('/purchase', async (req, res)=>{
+            const customer = req.query.customer;
+            const query = {customer:customer};
+            const purchase = await purchaseCollection.find(query).toArray();
+            res.send(purchase);
+        });
+
         app.post('/purchase', async (req, res)=>{
             const purchase = req.body;
             const query = {productName:purchase.productName, date:purchase.date, customer:purchase.customer};
@@ -70,6 +121,14 @@ async function run(){
             const result = await purchaseCollection.insertOne(purchase);
             return res.send({success:true, result});
         });
+
+        app.get('/purchase/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const purchase = await purchaseCollection.findOne(query);
+            res.send(purchase);
+          })
+
 
         app.get('/available', async (req, res)=>{
             const date = req.query.date;
