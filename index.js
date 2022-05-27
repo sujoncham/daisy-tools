@@ -62,6 +62,11 @@ async function run(){
             res.send(users);
         });
 
+        app.get('/users', async (req, res)=>{
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
         app.get('/products', async (req, res)=>{
             const products = await productCollection.find().toArray();
             res.send(products);
@@ -121,7 +126,7 @@ async function run(){
         //     res.send(reviews);
         // });
 
-        app.get('/purchase', async (req, res)=>{
+        app.get('/purchase', verifyJWT, async (req, res)=>{
             const customer = req.query.customer;
             const decodedEmail = req.decoded.email;
             if(customer === decodedEmail){
