@@ -9,13 +9,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// https://www.aloktools.com/
-
-// https://www.youtube.com/watch?v=1NWBO8L81J8
-// https://www.youtube.com/watch?v=eDw46GYAIDQ
-// https://with.zonayed.me/
-
-
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tzls3.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -94,6 +87,11 @@ async function run(){
             res.send(users);
         });
 
+        app.get('/inbox', async(req, res)=>{
+            const result = await inboxCollection.find().toArray();
+            res.send(result);
+        })
+
         app.post('/inbox', async (req, res)=>{ 
             const inbox = req.body;
             const result = await inboxCollection.insertOne(inbox);
@@ -143,6 +141,28 @@ async function run(){
             res.send(result);
           });
 
+        app.put('/myProfile/:id', async(req, res)=>{
+            const email = req.params.email;
+            const updatedId = req.body;
+            const filter = {email:email};
+            const options = {upsert: true};
+            const profileUpdate = {
+                $set:{
+                    name: updatedId.name,
+                    email:updatedId.email,
+                    phone:updatedId.phone,
+                    description:updatedId.description,
+                    address:updatedId.address,
+                    experience:updatedId.experience,
+                    skills:updatedId.skills,
+                    education:updatedId.education,
+                    img:updatedId.img,
+                }
+            }
+            const result = await profileCollection.updateOne(filter, profileUpdate, options);
+            res.send(result);
+        })
+
         app.get('/reviews', async (req, res)=>{
             const reviews = await reviewCollection.find().toArray();
             res.send(reviews);
@@ -153,11 +173,6 @@ async function run(){
             const result = await reviewCollection.insertOne(review);
             res.send(result);
         });
-
-        // app.get('/purchase', async (req, res)=>{
-        //     const reviews = await purchaseCollection.find().toArray();
-        //     res.send(reviews);
-        // });
 
         app.get('/purchase', verifyJWT, async (req, res)=>{
             const customer = req.query.customer;
@@ -175,7 +190,7 @@ async function run(){
 
         app.post('/purchase', async (req, res)=>{
             const purchase = req.body;
-            const query = {productName:purchase.productName, date:purchase.date, customer:purchase.customer};
+            const query = {name:purchase.name, date:purchase.date, customer:purchase.customer};
             const exists = await purchaseCollection.findOne(query);
             if(exists){
                 return res.send({success:false, purchase:exists})
@@ -189,6 +204,29 @@ async function run(){
             const query = {_id:ObjectId(id)};
             const purchase = await purchaseCollection.findOne(query);
             res.send(purchase);
+          });
+
+          app.delete('/purchase/:id', async (req, res)=>{
+            const id = req.params.id;
+            const filter = {_id:ObjectId(id)};
+            const result = await purchaseCollection.deleteOne(filter);
+            res.send(result);
+          });
+
+          app.post('/create-payment-intent', async (req, res)=>{
+            const purchase = req.body;
+            const price = service.price;
+            const amount = purchase*100;
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount:amount,
+              currency:'usd',
+              payment_method_types:['card']
+            });
+      
+            res.send({
+              clientSecret:paymentIntent.client_secret,
+            })
+      
           })
 
 
