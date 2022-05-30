@@ -139,14 +139,12 @@ async function run(){
             res.send(result);
           });
 
-        app.get('/myProfile/:id', async (req, res)=>{
-            const id = req.params.id;
-            const query = {_id:ObjectId(id)};
-            const profile = await profileCollection.findOne(query);
+        app.get('/myProfile', async (req, res)=>{
+            const profile = await profileCollection.find().toArray();
             res.send(profile);
         })
 
-        app.post('/myProfile/:id', async (req, res)=>{ 
+        app.post('/myProfile', async (req, res)=>{ 
             const profile = req.body;
             const result = await profileCollection.insertOne(profile);
             res.send(result);
