@@ -66,7 +66,7 @@ async function run(){
             
         })
 
-        app.put('/users/:email', verifyJWT, async (req, res)=>{
+        app.put('/users/:email', async (req, res)=>{
             const email = req.params.email;
             const user = req.body;
             const filter = {email:email};
@@ -105,7 +105,7 @@ async function run(){
             res.send(products);
         });
 
-        app.get('/products/:id', verifyJWT, async(req, res)=>{
+        app.get('/products/:id', async(req, res)=>{
             const id = req.params.id;
             const query = {_id:ObjectId(id)};
             const product = await productCollection.findOne(query);
@@ -139,8 +139,10 @@ async function run(){
             res.send(result);
           });
 
-        app.get('/myProfile/:email', verifyJWT, async (req, res)=>{
-            const profile = await profileCollection.find().toArray();
+        app.get('/myProfile/:id', async (req, res)=>{
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const profile = await profileCollection.findOne(query);
             res.send(profile);
         })
 
@@ -208,14 +210,14 @@ async function run(){
             return res.send({success:true, result});
         });
 
-        app.get('/purchase/:id', verifyJWT, async(req, res)=>{
+        app.get('/purchase/:id', async(req, res)=>{
             const id = req.params.id;
             const query = {_id:ObjectId(id)};
             const purchase = await purchaseCollection.findOne(query);
             res.send(purchase);
           });
 
-          app.delete('/purchase/:id', verifyJWT, async (req, res)=>{
+          app.delete('/purchase/:id', async (req, res)=>{
             const id = req.params.id;
             const filter = {_id:ObjectId(id)};
             const result = await purchaseCollection.deleteOne(filter);
@@ -238,7 +240,7 @@ async function run(){
       
           });
 
-          app.patch('/purchase/:id', verifyJWT, async (req, res)=>{
+          app.patch('/purchase/:id', async (req, res)=>{
             const id = req.params.id;
             const payment = req.body;
             const filter = {_id: ObjectId(id)};
