@@ -139,7 +139,7 @@ async function run(){
             res.send(result);
           });
 
-        app.get('/myProfile/:id', async (req, res)=>{
+        app.get('/myProfile/:email', async (req, res)=>{
             const profile = await profileCollection.find().toArray();
             res.send(profile);
         })
