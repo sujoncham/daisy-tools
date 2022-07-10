@@ -139,12 +139,12 @@ async function run(){
             res.send(result);
           });
 
-        app.get('/myProfile', async (req, res)=>{
+        app.get('/myProfile/:email', async (req, res)=>{
             const profile = await profileCollection.find().toArray();
             res.send(profile);
         })
 
-        app.post('/myProfile', async (req, res)=>{ 
+        app.post('/myProfile/:email', async (req, res)=>{ 
             const profile = req.body;
             const result = await profileCollection.insertOne(profile);
             res.send(result);
