@@ -150,7 +150,7 @@ async function run(){
             res.send(result);
           });
 
-        app.put('/myProfile/:email', async(req, res)=>{
+        app.patch('/myProfile/:email', async(req, res)=>{
             const email = req.params.email;
             const updatedId = req.body;
             const filter = {email:email};
