@@ -140,20 +140,21 @@ async function run(){
           });
 
         app.get('/myProfile/:email', async (req, res)=>{
-            const profile = await profileCollection.find().toArray();
+            const email = req.params.email;
+            const profile = await profileCollection.find(email).toArray();
             res.send(profile);
         })
 
-        app.post('/myProfile/:email', async (req, res)=>{ 
+        app.post('/myProfile', async (req, res)=>{ 
             const profile = req.body;
             const result = await profileCollection.insertOne(profile);
             res.send(result);
           });
 
-        app.patch('/myProfile/:email', async(req, res)=>{
-            const email = req.params.email;
+        app.patch('/myProfile/:id', async(req, res)=>{
+            const id = req.params.id;
             const updatedId = req.body;
-            const filter = {email:email};
+            const filter = {_id:ObjectId(id)};
             const options = {upsert: true};
             const profileUpdate = {
                 $set:{
